@@ -1,0 +1,46 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: Self_Hosted_Agents
+
+steps:
+- script: cd $(SrcPath)
+  displayName: 'Run a one-line script'
+
+- task: UseDotNet@2
+  displayName: 'Install .NET Core SDK'
+  inputs:
+    version: 6.x
+    performMultiLevelLookup: true
+
+- task: SonarQubePrepare@5
+  inputs:
+    SonarQube: 'LocalSonarQubeConnection'
+    scannerMode: 'MSBuild'
+    projectKey: 'aspnetapp-test'
+    projectName: 'DOTNET APP - DEVOPS TEST'
+    extraProperties: |
+      sonar.cs.msbuild.slnFile=$(SrcPath)/aspnetapp.sln
+      sonar.login=$(SonarQubeToken)
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build for sonar'
+  inputs:
+    workingDirectory: $(SrcPath)
+
+- task: SonarQubeAnalyze@5
+
+- task: SonarQubePublish@5
+  inputs:
+    pollingTimeoutSec: '300'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    workingDirectory: $(SrcPath)
