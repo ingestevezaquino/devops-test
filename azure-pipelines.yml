@@ -10,9 +10,6 @@ pool:
   name: Self_Hosted_Agents
 
 steps:
-- script: cd $(SrcPath)
-  displayName: 'Run a one-line script'
-
 - task: UseDotNet@2
   displayName: 'Install .NET Core SDK'
   inputs:
@@ -26,13 +23,13 @@ steps:
     projectKey: 'aspnetapp-test'
     projectName: 'DOTNET APP - DEVOPS TEST'
     extraProperties: |
-      sonar.cs.msbuild.slnFile=$(SrcPath)/aspnetapp.sln
-      sonar.login=$(SonarQubeToken)
+      sonar.cs.msbuild.slnFile=$(PATH_SRC)/aspnetapp.sln
+      sonar.login=$(SONARQUBE_TOKEN)
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build for sonar'
   inputs:
-    workingDirectory: $(SrcPath)
+    workingDirectory: $(PATH_SRC)
 
 - task: SonarQubeAnalyze@5
 
@@ -43,4 +40,25 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
-    workingDirectory: $(SrcPath)
+    workingDirectory: $(PATH_SRC)
+
+- script: |
+    #!/bin/bash
+    # Definir la variable ANALYSIS_ID, consultando el ID del ultimo analisis realizado para el project key: $(PROJECT_KEY)
+    ANALYSIS_ID=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/project_analyses/search?project=$(PROJECT_KEY)&format=JSON" | jq -r '.analyses[0].key')
+
+    # Consultar el estado del quality gate para el ultimo analisis realizado
+    quality_gate_status=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID")
+
+    # Imprimir en pantalla la consula y respuesta del quality gate
+    echo "curl -s -u $(SONARQUBE_TOKEN): '$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID'"
+    echo "$quality_gate_status"
+
+    # Verificar si el Quality Gate ha pasado
+    if [[ $(echo "$quality_gate_status" | jq -r '.projectStatus.status') == "OK" ]]; then
+      echo "El Quality Gate ha pasado."
+    else
+      echo "El Quality Gate no ha pasado. Lanzando una excepción..."
+      exit 1
+    fi
+  displayName: 'Check Quality Gate Status'
