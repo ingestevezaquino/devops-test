@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+    kubernetes.io/ingress.class: azure/application-gateway
+  name: {{ .Values.appName }}-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: {{ .Values.appName }}-service
+                port:
+                  number: 80
+            path: /{{ .Values.appName }}
+            pathType: Exact
+status:
+  loadBalancer: {}
