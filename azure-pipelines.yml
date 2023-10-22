@@ -69,7 +69,7 @@ steps:
     releaseType: stable
     dockerVersion: '17.09.0-ce'
 
-- script: 
+- script: |
     echo "docker build . -t $(DOCKER_REPO_NAME):$(Build.BuildId)"
     cd $(PATH_SRC)/aspnetapp/
     pwd
