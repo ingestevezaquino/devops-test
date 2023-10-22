@@ -70,6 +70,7 @@ steps:
     dockerVersion: '17.09.0-ce'
 
 - script: 
+    echo "docker build $(PATH_SRC)/aspnetapp/' -f '$(PATH_SRC)/aspnetapp/Dockerfile' -t $(DOCKER_REPO_NAME):$(Build.BuildId)"
     docker build $(PATH_SRC)/aspnetapp/' -f '$(PATH_SRC)/aspnetapp/Dockerfile' -t $(DOCKER_REPO_NAME):$(Build.BuildId)
   displayName: Build docker image for amd64
 
