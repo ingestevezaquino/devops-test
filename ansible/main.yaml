@@ -1,0 +1,80 @@
+---
+- name: Devops Test AKS (Azure Kubernetes Service) - Initial Settings
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Create a k8s namespace
+      kubernetes.core.k8s:
+        name: devops-test
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Create service account
+      kubernetes.core.k8s:
+        name: devops-sa
+        namespace: devops-test
+        api_version: v1
+        kind: ServiceAccount
+        state: present
+
+    - name: Create a secret for created service account
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: devops-sa-token
+            namespace: devops-test
+            annotations:
+              kubernetes.io/service-account.name: devops-sa
+          type: kubernetes.io/service-account-token
+
+    - name: Patch service account with previosly created secret
+      kubernetes.core.k8s:
+        state: patched
+        kind: ServiceAccount
+        name: devops-sa
+        namespace: devops-test
+        definition:
+          secrets:
+            - name: devops-sa-token
+
+    - name: Create a local role to manage core k8s resources
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: rbac.authorization.k8s.io/v1
+          kind: Role
+          metadata:
+            namespace: devops-test
+            name: core-mgt-role
+          rules:
+            - apiGroups: [""] # "" indicates the core API group
+              resources:
+                ["deployments", "replicsets", "pods", "services", "ingress"]
+              verbs: ["get", "watch", "list", "edit", "patch", "delete"]
+
+    - name: Bind created role to service account
+      kubernetes.core.k8s:
+        definition:
+          kind: RoleBinding
+          apiVersion: rbac.authorization.k8s.io/v1
+          metadata:
+            name: core-mgt-binding
+            namespace: devops-test
+          subjects:
+            - kind: ServiceAccount
+              name: devops-sa
+          roleRef:
+            kind: Role
+            name: core-mgt-role
+            apiGroup: rbac.authorization.k8s.io
+
+    - name: Get secret's token
+      ansible.builtin.shell:
+        cmd: kubectl get secret devops-sa-token -o jsonpath='{.data.token}' -n devops-test | base64 --decode
+      register: sa_token
+
+    - name: Print decoded secret's token to STDOUT
+      ansible.builtin.debug:
+        var: sa_token.stdout
