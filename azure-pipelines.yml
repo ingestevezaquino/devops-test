@@ -70,9 +70,10 @@ steps:
     dockerVersion: '17.09.0-ce'
 
 - script: 
-    echo "docker build $(PATH_SRC)/aspnetapp/ -f $(PATH_SRC)/aspnetapp/Dockerfile -t $(DOCKER_REPO_NAME):$(Build.BuildId)"
-    docker build $(PATH_SRC)/aspnetapp/ -f $(PATH_SRC)/aspnetapp/Dockerfile -t $(DOCKER_REPO_NAME):$(Build.BuildId)
-  displayName: Build docker image for amd64
+    echo "docker build . -t $(DOCKER_REPO_NAME):$(Build.BuildId)"
+    cd $(PATH_SRC)/aspnetapp/
+    docker build . -t $(DOCKER_REPO_NAME):$(Build.BuildId)
+  displayName: Build docker image for amd64 (works from agents running arm64 arch)
 
 # - task: Docker@2
 #   displayName: Build Image
