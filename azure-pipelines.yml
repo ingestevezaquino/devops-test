@@ -73,7 +73,7 @@ steps:
     cd $(PATH_SRC)/aspnetapp/
     which docker
     echo "docker buildx build --platform linux/amd64 -t $(DOCKER_REPO_NAME):$(Build.BuildId) ."
-    docker buildx build --platform linux/amd64 -t $(DOCKER_REPO_NAME):$(Build.BuildId) .
+    /usr/bin/docker buildx build --platform linux/amd64 -t $(DOCKER_REPO_NAME):$(Build.BuildId) .
   displayName: Build docker image for amd64 (works from agents running arm64 arch)
 
 # This task works, but if your Hosted Agent Node has an arm64 arch
