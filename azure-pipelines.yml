@@ -80,8 +80,10 @@ steps:
 
 - script: |
     # ~/.kube/config is already configured on Azure Devops Self Hosted Agent node
-    # So we're connected to  AKS cluster using a Service Account we previosly created. 
-    helm template $(APP_NAME)-release ./src/charts > environment/generated-manifests.yaml
+    # So we're connected to  AKS cluster using a Service Account we previosly created.
+
+    helm template $(APP_NAME)-release ./src/charts --set image.repository=$(DOCKER_REPO_NAME) \ 
+    --set image.tag=$(Build.BuildId) > environment/generated-manifests.yaml
     kubectl apply -f environment/generated-manifests.yaml -n devops-test
   displayName: 'Deploy to k8s'
 
