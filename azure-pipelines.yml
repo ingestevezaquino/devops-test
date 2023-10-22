@@ -76,16 +76,16 @@ steps:
   displayName: Build docker image for amd64 (works from agents running arm64 arch)
 
 # - task: Docker@2
-#   displayName: Build Image
+#   displayName: Build And Push Docker Image
 #   inputs:
 #     containerRegistry: 'DockerHubConnection'
 #     repository: $(DOCKER_REPO_NAME)
-#     command: 'Push'
+#     command: 'PushAndPush'
 #     Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
 #     buildContext: '$(PATH_SRC)/aspnetapp/'
   
 - task: Docker@2
-  displayName: Push image to docker registry
+  displayName: Push docker image to registry
   inputs:
     containerRegistry: 'DockerHubConnection'
     repository: $(DOCKER_REPO_NAME)
