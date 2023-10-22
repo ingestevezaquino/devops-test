@@ -69,14 +69,25 @@ steps:
     releaseType: stable
     dockerVersion: '17.09.0-ce'
 
+- script: 
+    docker build $(PATH_SRC)/aspnetapp/' -f '$(PATH_SRC)/aspnetapp/Dockerfile' -t $(DOCKER_REPO_NAME):$(Build.BuildId)
+  displayName: Build docker image for amd64
+
+# - task: Docker@2
+#   displayName: Build Image
+#   inputs:
+#     containerRegistry: 'DockerHubConnection'
+#     repository: $(DOCKER_REPO_NAME)
+#     command: 'Push'
+#     Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
+#     buildContext: '$(PATH_SRC)/aspnetapp/'
+  
 - task: Docker@2
-  displayName: Build and Push Docker Image
+  displayName: Push image to docker registry
   inputs:
     containerRegistry: 'DockerHubConnection'
     repository: $(DOCKER_REPO_NAME)
-    command: 'buildAndPush'
-    Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
-    buildContext: '$(PATH_SRC)/aspnetapp/'
+    command: 'Push'
 
 - script: |
     # ~/.kube/config is already configured on Azure Devops Self Hosted Agent node
