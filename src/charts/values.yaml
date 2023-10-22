@@ -1,0 +1,7 @@
+appName: aspnetapp
+replicaCount: 2
+image:
+  repository: ingestevezaquino/devops-test-repo
+  tag: latest
+containerPort: 80
+servicePort: 80
