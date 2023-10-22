@@ -39,8 +39,8 @@ steps:
 
 - script: |
     #!/bin/bash
-    # Definir la variable ANALYSIS_ID, consultando el ID del ultimo analisis realizado para el project key: $(PROJECT_KEY)
-    ANALYSIS_ID=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/project_analyses/search?project=$(PROJECT_KEY)&format=JSON" | jq -r '.analyses[0].key')
+    # Definir la variable ANALYSIS_ID, consultando el ID del ultimo analisis realizado para el project key: $(SONARQUBE_PROJECT_KEY)
+    ANALYSIS_ID=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/project_analyses/search?project=$(SONARQUBE_PROJECT_KEY)&format=JSON" | jq -r '.analyses[0].key')
 
     # Consultar el estado del quality gate para el ultimo analisis realizado
     quality_gate_status=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID")
