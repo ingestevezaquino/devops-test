@@ -27,7 +27,7 @@ steps:
       sonar.login=$(SONARQUBE_TOKEN)
 
 - task: DotNetCoreCLI@2
-  displayName: 'dotnet build for sonar'
+  displayName: 'Build to be analyzed by SonarQube'
   inputs:
     workingDirectory: $(PATH_SRC)
 
@@ -36,11 +36,6 @@ steps:
 - task: SonarQubePublish@5
   inputs:
     pollingTimeoutSec: '300'
-
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet build'
-  inputs:
-    workingDirectory: $(PATH_SRC)
 
 - script: |
     #!/bin/bash
@@ -62,3 +57,22 @@ steps:
       exit 1
     fi
   displayName: 'Check Quality Gate Status'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build App'
+  inputs:
+    workingDirectory: $(PATH_SRC)
+
+- task: DockerInstaller@0
+  displayName: 'Install Docker CE Stable'
+  inputs:
+    releaseType: stable
+    dockerVersion: '17.09.0-ce'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'DockerHubConnection'
+    repository: $(DOCKER_REPO_NAME)
+    command: 'buildAndPush'
+    Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
+    buildContext: '$(PATH_SRC)/aspnetapp/'
