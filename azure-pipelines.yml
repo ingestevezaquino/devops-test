@@ -109,6 +109,7 @@ steps:
   - script: |
       git config --global user.email $(GIT_EMAIL)
       git config --global user.name $(GIT_NAME)
+      git checkout master
       git add ./environment/
       git commit -m "add ./environment/generated-manifests.yaml file"
       git push -u origin master
