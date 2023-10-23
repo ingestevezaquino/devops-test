@@ -3,13 +3,17 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+# Set trigger none cause this pipeline pushes changes to remote repo
+# In order to avoid an infinite loop, it's executed manually
 trigger:
 - none
 
 pool:
   name: Self_Hosted_Agents
 
-steps:
+jobs:
+- job: CI_CD_JOB
+  steps:
   - task: UseDotNet@2
     displayName: "Install .NET Core SDK"
     inputs:
@@ -112,9 +116,26 @@ steps:
       git fetch --all
       git checkout master
       git add ./environment/
-      git commit -m "add ./environment/generated-manifests.yaml file"
+      git commit -m "add/update environment/generated-manifests.yaml file from pipeline"
       git remote set-url origin https://ingestevezaquino:$(GITHUB_TOKEN)@github.com/ingestevezaquino/devops-test.git
-      git log --oneline
-      git status
       git push -u origin master
     displayName: "Add k8s manifests bundle to remote repo"
+
+- job: Files_Creation_Job
+  steps:
+  - script: |
+      for i in {1..10}; 
+      do
+        echo "Hello World"
+      done;
+    displayName: "Print hello world 10 times."
+
+  - script: |
+      for i in {1..10}; 
+      do
+        touch file$i-$(date +'%d-%m-%Y')
+        echo "$(date +'%d-%m-%Y')" > file$i-$(date +'%d-%m-%Y')
+        cat file$i-$(date +'%d-%m-%Y')
+      done;
+    displayName: "Make 10 files with current date, then print them on STDOUT."
+
