@@ -4,7 +4,10 @@
 # https://aka.ms/yaml
 
 trigger:
-  - master
+- 'master'
+
+pr:
+- 'master'
 
 pool:
   name: Self_Hosted_Agents
@@ -105,3 +108,9 @@ steps:
 
   - script: echo "http://20.85.72.3/"
     displayName: "URL to Access APP:"
+  
+  - script: |
+      git add environment/
+      git commit -m "add environment/generated-manifests.yaml file"
+      git push -u origin master
+    displayName: "Add manifest bundle to repo"
