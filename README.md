@@ -5,7 +5,7 @@ This repo contains the source code:
 - To deploy an AKS cluster with Terraform
 - To configure some initial settings using Ansible
 
-## Software used:
+## Stack:
 
 - A local machine running a SonarQube v10.2.1 instance
 - A local machine running as an Azure Self Hosted Agent (with Docker Daemon v24.0.6 and Helm v3.13.1 installed)
