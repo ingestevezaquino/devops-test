@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: aspnetapp-container
-        image: ingestevezaquino/devops-test-repo:169
+        image: ingestevezaquino/devops-test-repo:170
         ports:
         - containerPort: 80
 ---
