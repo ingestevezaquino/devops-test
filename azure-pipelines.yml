@@ -103,5 +103,5 @@ steps:
       kubectl apply -f environment/generated-manifests.yaml -n devops-test
     displayName: "Deploy to k8s"
 
-  - script: echo "https://20.85.72.3/$(APP_NAME)"
+  - script: echo "http://20.85.72.3/"
     displayName: "URL to Access APP:"

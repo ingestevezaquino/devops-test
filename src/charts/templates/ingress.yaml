@@ -14,7 +14,7 @@ spec:
                 name: {{ .Values.appName }}-service
                 port:
                   number: 80
-            path: /{{ .Values.appName }}
+            path: /
             pathType: Exact
 status:
   loadBalancer: {}
