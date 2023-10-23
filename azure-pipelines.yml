@@ -114,4 +114,4 @@ steps:
       git add ./environment/
       git commit -m "add ./environment/generated-manifests.yaml file"
       git push -u origin master
-    displayName: "Add manifest bundle to repo"
+    displayName: "Add k8s manifests bundle to remote repo"
