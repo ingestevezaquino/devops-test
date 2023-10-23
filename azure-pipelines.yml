@@ -76,8 +76,10 @@ steps:
       /usr/bin/docker buildx build --push --platform linux/amd64,linux/arm64 -t $(DOCKER_REPO_NAME):$(Build.BuildId) .
     displayName: Build and push docker images for amd64 and arm64 arch
 
-  # This task works, but if your Hosted Agent Node has an arm64 arch
-  # The image will be built for an arm64 arch as well
+  # [THIS DOCKER TASKS WORK!]... but, you could face some trouble
+  # while building docker image from a host with arm64 arch to amd64
+  # and making it run on AKS nodes.
+
   # - task: Docker@2
   #   displayName: Build And Push Docker Image
   #   inputs:
@@ -87,12 +89,12 @@ steps:
   #     Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
   #     buildContext: '$(PATH_SRC)/aspnetapp/'
 
-  - task: Docker@2
-    displayName: Push docker image to registry
-    inputs:
-      containerRegistry: "DockerHubConnection"
-      repository: $(DOCKER_REPO_NAME)
-      command: "Push"
+  # - task: Docker@2
+  #   displayName: Push Docker Image to Registry
+  #   inputs:
+  #     containerRegistry: "DockerHubConnection"
+  #     repository: $(DOCKER_REPO_NAME)
+  #     command: "Push"
 
   - script: |
       # ~/.kube/config is already configured on Azure Devops Self Hosted Agent node
