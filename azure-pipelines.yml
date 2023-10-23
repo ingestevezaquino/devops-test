@@ -113,5 +113,6 @@ steps:
       git checkout master
       git add ./environment/
       git commit -m "add ./environment/generated-manifests.yaml file"
+      git remote set-url origin https://ingestevezaquino:$(GITHUB_TOKEN)@github.com/ingestevezaquino/devops-test.git
       git push -u origin master
     displayName: "Add k8s manifests bundle to remote repo"
