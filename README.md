@@ -19,6 +19,7 @@ This repo contains the source code:
 | Syntax      | Description |
 | ----------- | ----------- |
 | Azure Devops      | [Azure DevOps ORG](https://dev.azure.com/estevez-org/DevOps%20Test)       |
+| DockerHub Repository     | [DockerHub Repo](https://hub.docker.com/repository/docker/ingestevezaquino/devops-test-repo/)       |
 | Exposed APP on AKS  | [APP URI](http://20.85.72.3)       |
 
 ## Images
