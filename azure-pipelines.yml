@@ -4,104 +4,104 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+  - master
 
 pool:
   name: Self_Hosted_Agents
 
 steps:
-- task: UseDotNet@2
-  displayName: 'Install .NET Core SDK'
-  inputs:
-    version: 6.x
-    performMultiLevelLookup: true
+  - task: UseDotNet@2
+    displayName: "Install .NET Core SDK"
+    inputs:
+      version: 6.x
+      performMultiLevelLookup: true
 
-- task: SonarQubePrepare@5
-  inputs:
-    SonarQube: 'LocalSonarQubeConnection'
-    scannerMode: 'MSBuild'
-    projectKey:  $(SONARQUBE_PROJECT_KEY)
-    projectName: $(SONARQUBE_PROJECT_NAME)
-    extraProperties: |
-      sonar.cs.msbuild.slnFile=$(PATH_SRC)/aspnetapp.sln
-      sonar.login=$(SONARQUBE_TOKEN)
+  - task: SonarQubePrepare@5
+    inputs:
+      SonarQube: "LocalSonarQubeConnection"
+      scannerMode: "MSBuild"
+      projectKey: $(SONARQUBE_PROJECT_KEY)
+      projectName: $(SONARQUBE_PROJECT_NAME)
+      extraProperties: |
+        sonar.cs.msbuild.slnFile=$(PATH_SRC)/aspnetapp.sln
+        sonar.login=$(SONARQUBE_TOKEN)
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build to be analyzed by SonarQube'
-  inputs:
-    workingDirectory: $(PATH_SRC)
+  - task: DotNetCoreCLI@2
+    displayName: "Build to be analyzed by SonarQube"
+    inputs:
+      workingDirectory: $(PATH_SRC)
 
-- task: SonarQubeAnalyze@5
+  - task: SonarQubeAnalyze@5
 
-- task: SonarQubePublish@5
-  inputs:
-    pollingTimeoutSec: '300'
+  - task: SonarQubePublish@5
+    inputs:
+      pollingTimeoutSec: "300"
 
-- script: |
-    #!/bin/bash
-    # Definir la variable ANALYSIS_ID, consultando el ID del ultimo analisis realizado para el project key: $(SONARQUBE_PROJECT_KEY)
-    ANALYSIS_ID=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/project_analyses/search?project=$(SONARQUBE_PROJECT_KEY)&format=JSON" | jq -r '.analyses[0].key')
+  - script: |
+      #!/bin/bash
+      # Definir la variable ANALYSIS_ID, consultando el ID del ultimo analisis realizado para el project key: $(SONARQUBE_PROJECT_KEY)
+      ANALYSIS_ID=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/project_analyses/search?project=$(SONARQUBE_PROJECT_KEY)&format=JSON" | jq -r '.analyses[0].key')
 
-    # Consultar el estado del quality gate para el ultimo analisis realizado
-    quality_gate_status=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID")
+      # Consultar el estado del quality gate para el ultimo analisis realizado
+      quality_gate_status=$(curl -s -u $(SONARQUBE_TOKEN): "$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID")
 
-    # Imprimir en pantalla la consula y respuesta del quality gate
-    echo "curl -s -u $(SONARQUBE_TOKEN): '$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID'"
-    echo "$quality_gate_status"
+      # Imprimir en pantalla la consula y respuesta del quality gate
+      echo "curl -s -u $(SONARQUBE_TOKEN): '$(SONARQUBE_SERVER)/api/qualitygates/project_status?analysisId=$ANALYSIS_ID'"
+      echo "$quality_gate_status"
 
-    # Verificar si el Quality Gate ha pasado
-    if [[ $(echo "$quality_gate_status" | jq -r '.projectStatus.status') == "OK" ]]; then
-      echo "El Quality Gate ha pasado."
-    else
-      echo "El Quality Gate no ha pasado. Lanzando una excepción..."
-      exit 1
-    fi
-  displayName: 'Check Quality Gate Status'
+      # Verificar si el Quality Gate ha pasado
+      if [[ $(echo "$quality_gate_status" | jq -r '.projectStatus.status') == "OK" ]]; then
+        echo "El Quality Gate ha pasado."
+      else
+        echo "El Quality Gate no ha pasado. Lanzando una excepción..."
+        exit 1
+      fi
+    displayName: "Check Quality Gate Status"
 
-- task: DotNetCoreCLI@2
-  displayName: 'Build App'
-  inputs:
-    workingDirectory: $(PATH_SRC)
+  - task: DotNetCoreCLI@2
+    displayName: "Build App"
+    inputs:
+      workingDirectory: $(PATH_SRC)
 
-- task: DockerInstaller@0
-  displayName: 'Install Docker CE Stable'
-  inputs:
-    releaseType: stable
-    dockerVersion: '17.09.0-ce'
+  - task: DockerInstaller@0
+    displayName: "Install Docker CE Stable"
+    inputs:
+      releaseType: stable
+      dockerVersion: "17.09.0-ce"
 
-- script: |
-    cd $(PATH_SRC)/aspnetapp/
-    echo "/usr/bin/docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile -t $(DOCKER_REPO_NAME):$(Build.BuildId) ."
-    /usr/bin/docker buildx create --use
-    /usr/bin/docker buildx build --platform linux/amd64,linux/arm64 --load -f Dockerfile -t $(DOCKER_REPO_NAME):$(Build.BuildId) .
-    /usr/bin/docker push $(DOCKER_REPO_NAME):$(Build.BuildId)
-  displayName: Build docker image for amd64 (works from agents running arm64 arch)
+  - script: |
+      cd $(PATH_SRC)/aspnetapp/
+      echo "/usr/bin/docker buildx build --push --platform linux/amd64,linux/arm64 -t $(DOCKER_REPO_NAME):$(Build.BuildId) ."
+      /usr/bin/docker buildx create --use
+      /usr/bin/docker buildx build --push --platform linux/amd64,linux/arm64 --load -t $(DOCKER_REPO_NAME):$(Build.BuildId) .
+      /usr/bin/docker push $(DOCKER_REPO_NAME):$(Build.BuildId)
+    displayName: Build and push docker images for amd64 and arm64 arch
 
-# This task works, but if your Hosted Agent Node has an arm64 arch
-# The image will be built for an arm64 arch as well
-# - task: Docker@2
-#   displayName: Build And Push Docker Image
-#   inputs:
-#     containerRegistry: 'DockerHubConnection'
-#     repository: $(DOCKER_REPO_NAME)
-#     command: 'BuildAndPush'
-#     Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
-#     buildContext: '$(PATH_SRC)/aspnetapp/'
-  
-- task: Docker@2
-  displayName: Push docker image to registry
-  inputs:
-    containerRegistry: 'DockerHubConnection'
-    repository: $(DOCKER_REPO_NAME)
-    command: 'Push'
+  # This task works, but if your Hosted Agent Node has an arm64 arch
+  # The image will be built for an arm64 arch as well
+  # - task: Docker@2
+  #   displayName: Build And Push Docker Image
+  #   inputs:
+  #     containerRegistry: 'DockerHubConnection'
+  #     repository: $(DOCKER_REPO_NAME)
+  #     command: 'BuildAndPush'
+  #     Dockerfile: '$(PATH_SRC)/aspnetapp/Dockerfile'
+  #     buildContext: '$(PATH_SRC)/aspnetapp/'
 
-- script: |
-    # ~/.kube/config is already configured on Azure Devops Self Hosted Agent node
-    # So we're connected to  AKS cluster using a Service Account we previosly created.
+  - task: Docker@2
+    displayName: Push docker image to registry
+    inputs:
+      containerRegistry: "DockerHubConnection"
+      repository: $(DOCKER_REPO_NAME)
+      command: "Push"
 
-    helm template $(APP_NAME)-release ./src/charts --set image.repository=$(DOCKER_REPO_NAME) --set image.tag=$(Build.BuildId) > environment/generated-manifests.yaml
-    kubectl apply -f environment/generated-manifests.yaml -n devops-test
-  displayName: 'Deploy to k8s'
+  - script: |
+      # ~/.kube/config is already configured on Azure Devops Self Hosted Agent node
+      # So we're connected to  AKS cluster using a Service Account we previosly created.
 
-- script: echo "https://20.85.72.3/$(APP_NAME)"
-  displayName: 'Print deployed app using this URL'
+      helm template $(APP_NAME)-release ./src/charts --set image.repository=$(DOCKER_REPO_NAME) --set image.tag=$(Build.BuildId) > environment/generated-manifests.yaml
+      kubectl apply -f environment/generated-manifests.yaml -n devops-test
+    displayName: "Deploy to k8s"
+
+  - script: echo "https://20.85.72.3/$(APP_NAME)"
+    displayName: "Print deployed app using this URL"
