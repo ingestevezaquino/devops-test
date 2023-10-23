@@ -1,0 +1,57 @@
+---
+# Source: aspnetapp/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspnetapp-service
+spec:
+  selector:
+    app: aspnetapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Source: aspnetapp/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspnetapp-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aspnetapp
+  template:
+    metadata:
+      labels:
+        app: aspnetapp
+    spec:
+      containers:
+      - name: aspnetapp-container
+        image: ingestevezaquino/devops-test-repo:168
+        ports:
+        - containerPort: 80
+---
+# Source: aspnetapp/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    appgw.ingress.kubernetes.io/use-private-ip: "false"
+    kubernetes.io/ingress.class: azure/application-gateway
+  name: aspnetapp-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - backend:
+              service:
+                name: aspnetapp-service
+                port:
+                  number: 80
+            path: /
+            pathType: Exact
+status:
+  loadBalancer: {}
