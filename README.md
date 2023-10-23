@@ -13,6 +13,7 @@ This repo contains the source code:
 - Ansible core v2.15.5
 - Terraform v1.6.2
 - An Azure Devops Organization
+- DockerHub registry
 
 ## Links
 
