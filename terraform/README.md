@@ -9,6 +9,6 @@ The main.tf config file creates a simple but yet functional Kubernetes cluster o
 
 ```
 terraform init
-terraform plan -o k8s.plan
+terraform plan -out k8s.plan
 terraform apply "k8s.plan"
 ```
