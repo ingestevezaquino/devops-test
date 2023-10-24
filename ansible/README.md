@@ -1,6 +1,6 @@
 # Initial k8s config file
 
-This is an add-on, here I automate with ansible some basic configuration related to target namespace and service account for and k8s cluster.
+This is an add-on, here I automate with ansible some basic configuration related to target namespace and service account for a k8s cluster.
 
 ## Requirements:
 
